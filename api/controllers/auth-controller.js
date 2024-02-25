@@ -1,14 +1,13 @@
 import User from '../models/user-model.js';
 import bcrypt from 'bcrypt'
+import { errorHandler } from '../utils/error.js';
 
-const signup = async(req, res)=>{
+const signup = async(req, res, next)=>{
     const {username, email, password} = req.body;
     try{
 
         if(!username || !email || !password || username==='' || email==='' || password===''){
-            res.status(400).json({
-                message: "All field are required"
-            })
+            next(errorHandler(400, 'All fields are require'));
         }
         const existingUser = await User.findOne({
                 $or: [{
@@ -18,9 +17,7 @@ const signup = async(req, res)=>{
                 }]
         });
         if(existingUser){
-            res.status(400).json({
-                message:"Username atau Email sudah terdaftar!"
-            })
+            next(errorHandler(400, 'Username or email already exist'));
         }
 
         const hashedPassword = await bcrypt.hash(password, 10)
@@ -36,8 +33,8 @@ const signup = async(req, res)=>{
             data: result
         }) 
     }
-    catch(e){
-        console.error(e);
+    catch(error){
+        next(error)
     }
 
 }
