@@ -1,5 +1,5 @@
 import User from '../models/user-model.js';
-import bcrypt from 'bcrypt'
+import bcrypt from 'bcrypt';
 import { errorHandler } from '../utils/error.js';
 
 const signup = async(req, res, next)=>{
@@ -21,6 +21,7 @@ const signup = async(req, res, next)=>{
         }
 
         const hashedPassword = await bcrypt.hash(password, 10)
+        console.log(hashedPassword);
         const newUser = new User({
             username,
             email,
