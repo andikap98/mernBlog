@@ -1,6 +1,7 @@
 import User from '../models/user-model.js';
 import bcrypt from 'bcrypt';
 import { errorHandler } from '../utils/error.js';
+import jwt from 'jsonwebtoken'
 
 const signup = async(req, res, next)=>{
     const {username, email, password} = req.body;
@@ -40,6 +41,42 @@ const signup = async(req, res, next)=>{
 
 }
 
+const signin = async(req, res, next)=>{
+    const {email, password} = req.body;
+    if(!email || !password || email===''|| password===''){
+        next(errorHandler(400, 'All fields are required'))
+    }
+    try {
+        
+        const validUser = await User.findOne({email});
+
+        if(!validUser){
+            next(errorHandler(404, 'Email not found'))
+        }
+
+        const validPassword = await bcrypt.compare(password, validUser.password);
+
+        if(!validPassword){
+            next(errorHandler(400, 'Password wrong'));
+        }
+
+        const token = jwt.sign({id: validUser._id}, process.env.JWT_SECRET);
+        
+        // mengambil semua data kecuali password menggunakan destructuring
+        const {password: pass, ...rest} = validUser._doc;
+        res
+            .status(200)
+            .cookie('access_token', token, {
+                httpOnly: true
+            })
+            .json(rest);
+
+    } catch (error) {
+        next(error)
+    }
+}
+
 export default {
-    signup
+    signup,
+    signin
 }
