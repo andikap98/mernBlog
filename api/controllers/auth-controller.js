@@ -48,16 +48,16 @@ const signin = async(req, res, next)=>{
     }
     try {
         
-        const validUser = await User.findOne({email});
+        const validUser = await User.findOne({ email });
 
         if(!validUser){
-            next(errorHandler(404, 'Email not found'))
+            return next(errorHandler(404, 'Email not found'))
         }
 
         const validPassword = await bcrypt.compare(password, validUser.password);
 
         if(!validPassword){
-            next(errorHandler(400, 'Password wrong'));
+            return next(errorHandler(400, 'Password wrong'));
         }
 
         const token = jwt.sign({id: validUser._id}, process.env.JWT_SECRET);
